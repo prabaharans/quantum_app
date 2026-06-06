@@ -740,7 +740,7 @@ function triggerSimulation() {
         }
     };
 
-    fetch('api.php', {
+    fetch('/quantum_app/public/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -1002,7 +1002,7 @@ function renderShotsChart(shotsData) {
 
 // Presets Loading
 function loadPresets() {
-    fetch('api.php?action=presets')
+    fetch('/quantum_app/public/api/presets')
         .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {
@@ -1037,7 +1037,7 @@ function loadPresetCircuit(presetId) {
 
 // Saved Circuits Management
 function loadSavedCircuits() {
-    fetch('api.php?action=list_saved')
+    fetch('/quantum_app/public/api/circuits')
         .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {
@@ -1083,7 +1083,7 @@ function loadSavedCircuits() {
 }
 
 function loadSavedCircuit(name) {
-    fetch(`api.php?action=load_saved&name=${encodeURIComponent(name)}`)
+    fetch(`/quantum_app/public/api/circuits/load?name=${encodeURIComponent(name)}`)
         .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {
@@ -1105,7 +1105,6 @@ function loadSavedCircuit(name) {
 
 function saveCircuit(name) {
     const payload = {
-        action: 'save_circuit',
         name: name,
         circuit: {
             numQubits: numQubits,
@@ -1113,7 +1112,7 @@ function saveCircuit(name) {
         }
     };
 
-    fetch('api.php', {
+    fetch('/quantum_app/public/api/circuits/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -1129,12 +1128,9 @@ function saveCircuit(name) {
 }
 
 function deleteSavedCircuit(name) {
-    const payload = {
-        action: 'delete_circuit',
-        name: name
-    };
+    const payload = { name: name };
 
-    fetch('api.php', {
+    fetch('/quantum_app/public/api/circuits/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

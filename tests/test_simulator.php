@@ -2,13 +2,10 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../src/Complex.php';
-require_once __DIR__ . '/../src/Statevector.php';
-require_once __DIR__ . '/../src/QuantumCircuit.php';
-require_once __DIR__ . '/../src/QuantumSimulator.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-use QuantumApp\QuantumCircuit;
-use QuantumApp\QuantumSimulator;
+use QuantumApp\Model\QuantumCircuit;
+use QuantumApp\Model\QuantumSimulator;
 
 function assertAlmostEqual(float $actual, float $expected, string $message, float $epsilon = 1e-5): void
 {
@@ -19,7 +16,7 @@ function assertAlmostEqual(float $actual, float $expected, string $message, floa
 
 function runTests(): void
 {
-    echo "=== Running Quantum Simulator Tests ===\n\n";
+    echo "=== Running Quantum Simulator Tests (MVC Namespaces) ===\n\n";
 
     // Test 1: Single qubit H gate (Superposition)
     echo "Test 1: Single qubit Hadamard... ";
@@ -67,11 +64,6 @@ function runTests(): void
     $result = $sim->run($circuit);
     $sv = $result['statevector'];
 
-    // Expected amplitudes:
-    // |00> real: 1/sqrt(2)
-    // |01> real: 0.0
-    // |10> real: 0.0
-    // |11> real: 1/sqrt(2)
     assertAlmostEqual($sv->amplitudes[0], $invSqrt2, "Real part of |00>"); // index 0
     assertAlmostEqual($sv->amplitudes[2], 0.0, "Real part of |01>");       // index 1
     assertAlmostEqual($sv->amplitudes[4], 0.0, "Real part of |10>");       // index 2
@@ -125,6 +117,33 @@ function runTests(): void
     // Step 1: (|00> + |11>) / sqrt(2)
     assertAlmostEqual($steps[1]['statevector']->amplitudes[0], $invSqrt2, "Step 1 q0 state");
     assertAlmostEqual($steps[1]['statevector']->amplitudes[6], $invSqrt2, "Step 1 q3 state");
+    echo "PASSED\n";
+
+    // Test 6: CircuitRepository
+    echo "Test 6: CircuitRepository persistence... ";
+    $tempFile = sys_get_temp_dir() . '/quantum_test_circuits.json';
+    $repo = new \QuantumApp\Model\CircuitRepository($tempFile);
+
+    $circuitData = ['numQubits' => 2, 'gates' => []];
+    $repo->save('TestCircuit', $circuitData);
+
+    $loaded = $repo->findByName('testcircuit'); // case-insensitive
+    if ($loaded === null) {
+        throw new \Exception("CircuitRepository: saved circuit not found.");
+    }
+    if ($loaded['numQubits'] !== 2) {
+        throw new \Exception("CircuitRepository: loaded circuit has wrong numQubits.");
+    }
+
+    $repo->deleteByName('TestCircuit');
+    if ($repo->findByName('TestCircuit') !== null) {
+        throw new \Exception("CircuitRepository: deleted circuit still found.");
+    }
+
+    // Cleanup temp file
+    if (file_exists($tempFile)) {
+        unlink($tempFile);
+    }
     echo "PASSED\n";
 
     echo "\nAll tests completed successfully!\n";

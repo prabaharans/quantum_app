@@ -1,0 +1,17 @@
+Options -Indexes
+
+# ─── Rewrite Engine ───────────────────────────────────────────────────────────
+# Route all requests through the Front Controller (index.php).
+# Static assets (CSS, JS, images) are served directly without rewriting.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /quantum_app/public/
+
+    # If the request is for an existing file or directory, serve it directly
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Otherwise, route everything through the front controller
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
